@@ -1,12 +1,3 @@
-/*
- * KODE GABUNGAN ESP32 UNTUK TUGAS HIDROPONIK (1b & 2b)
- *
- * Logika:
- * 1. Menjalankan logika LED & Buzzer berdasarkan suhu (Soal 1b)
- * 2. Streaming data suhu & kelembapan ke MQTT (Soal 2b)
- * 3. Menerima perintah relay/pompa dari MQTT (Soal 2b)
- */
-
 // 1. Sertakan Library
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
@@ -14,8 +5,8 @@
 #include <DHT.h>
 
 // 2. Konfigurasi Jaringan & MQTT
-const char* ssid = "Wokwi-GUEST"; // Sesuai wokwi.toml
-const char* password = "";        // Sesuai wokwi.toml
+const char* ssid = "Wokwi-GUEST"; 
+const char* password = "";        
 const char* mqtt_server = "9697015f3b5d4b9dbcbaaa9789835176.s1.eu.hivemq.cloud"; // Broker publik
 const int   mqtt_port = 8883;
 const char* mqtt_username = "esp32_hidroponik";
@@ -85,8 +76,7 @@ void setup_wifi() {
   Serial.println("\nWiFi terhubung!");
 }
 
-// --- FUNGSI CALLBACK MQTT (Saat Menerima Pesan) ---
-// Ini untuk Soal 2b (Standby input pompa/relay)
+// --- FUNGSI CALLBACK MQTT
 void mqtt_callback(char* topic, byte* payload, unsigned int length) {
   String message = "";
   for (int i = 0; i < length; i++) {
@@ -188,4 +178,5 @@ void loop() {
     Serial.print("Data terkirim ke MQTT: ");
     Serial.println(jsonBuffer);
   }
+
 }
