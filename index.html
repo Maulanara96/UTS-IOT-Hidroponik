@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Sensor Hidroponik</title>
+    
+    <style>
+        /* Reset sederhana & font dasar */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #0056b3;
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        /* Kotak statistik */
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: #555;
+        }
+
+        .stat-card p {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 0;
+        }
+
+        .stat-card span {
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        /* Tabel */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        thead {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Daftar Bulan */
+        ul {
+            list-style-type: disc;
+            background-color: #fff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    </head>
+<body>
+
+    <header>
+        <h1>Dashboard Sensor Hidroponik</h1>
+    </header>
+
+    <main>
+        <h2>Statistik Suhu</h2>
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>Suhu Maksimal</h3>
+                <p id="suhu-max">--</p>
+                <span>&deg;C</span>
+            </div>
+            <div class="stat-card">
+                <h3>Suhu Minimal</h3>
+                <p id="suhu-min">--</p>
+                <span>&deg;C</span>
+            </div>
+            <div class="stat-card">
+                <h3>Suhu Rata-rata</h3>
+                <p id="suhu-avg">--</p>
+                <span>&deg;C</span>
+            </div>
+        </div>
+
+        <h2>Data Detail Saat Suhu Mencapai Maksimal</h2>
+        <table id="detail-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Suhu</th>
+                    <th>Kelembapan</th>
+                    <th>Kecerahan (Lux)</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody id="detail-table-body">
+                <tr>
+                    <td colspan="5">Memuat data...</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Bulan/Tahun Terjadinya Suhu Maksimal</h2>
+        <ul id="month-list">
+            <li>Memuat data...</li>
+        </ul>
+
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const apiUrl = "api.php"; 
+
+            fetchData();
+
+            async function fetchData() {
+                try {
+                    // 1. Ambil data dari backend
+                    const response = await fetch(apiUrl);
+                    
+                    // Cek jika response gagal (misal: file not found)
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    // 2. Ubah response menjadi JSON
+                    const data = await response.json();
+
+                    // 3. Panggil fungsi untuk mengisi data ke HTML
+                    populateData(data);
+
+                } catch (error) {
+                    console.error("Gagal mengambil data:", error);
+                    // Tampilkan error ke pengguna
+                    document.querySelector("main").innerHTML = `<p style="color: red; text-align: center;">Gagal memuat data. Pastikan backend (api.php) dan database berjalan.</p>`;
+                }
+            }
+
+            function populateData(data) {
+                // --- 1. Isi Statistik Utama ---
+                document.getElementById("suhu-max").textContent = data.suhumax.toFixed(2);
+                document.getElementById("suhu-min").textContent = data.suhumin.toFixed(2);
+                document.getElementById("suhu-avg").textContent = data.suhurata.toFixed(2);
+
+                // --- 2. Isi Tabel Detail ---
+                const tableBody = document.getElementById("detail-table-body");
+                tableBody.innerHTML = ""; // Kosongkan tulisan "Memuat data..."
+
+                if (data.nilai_suhu_max_humid_max.length > 0) {
+                    data.nilai_suhu_max_humid_max.forEach(item => {
+                        const row = `
+                            <tr>
+                                <td>${item.idx}</td>
+                                <td>${item.suhun}</td>
+                                <td>${item.humid}</td>
+                                <td>${item.kecerahan}</td>
+                                <td>${item.timestamp}</td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row; // Tambahkan baris baru ke tabel
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="5">Tidak ada data detail.</td></tr>';
+                }
+
+                // --- 3. Isi Daftar Bulan ---
+                const monthList = document.getElementById("month-list");
+                monthList.innerHTML = ""; // Kosongkan tulisan "Memuat data..."
+
+                if (data.month_year_max.length > 0) {
+                    data.month_year_max.forEach(item => {
+                        const li = `<li>${item.month_year}</li>`;
+                        monthList.innerHTML += li; // Tambahkan list item baru
+                    });
+                } else {
+                    monthList.innerHTML = "<li>Tidak ada data bulan.</li>";
+                }
+            }
+        });
+    </script>
+    </body>
+</html>
